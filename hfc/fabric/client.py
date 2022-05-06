@@ -69,18 +69,21 @@ class Client(object):
             _logger.debug("Init client with profile={}".format(net_profile))
             self.init_with_net_profile(net_profile)
 
-    def init_with_net_profile(self, profile_path='network.json'):
+    def init_with_net_profile(self, net_profile='network.json'):
         """
         Load the connection profile from external file to network_info.
 
         Init the handlers for orgs, peers, orderers, ca nodes
 
-        :param profile_path: The connection profile file path
+        :param net_profile: The connection profile file path or json
         :return:
         """
-        with open(profile_path, 'r') as profile:
-            d = json.load(profile)
-            self.network_info = d
+        if isinstance(net_profile, str):
+            with open(net_profile, 'r') as profile:
+                d = json.load(profile)
+                self.network_info = d
+        else:
+            self.network_info = net_profile
 
         # read kv store path
         self.kv_store_path = self.get_net_info('client', 'credentialStore',
@@ -89,7 +92,7 @@ class Client(object):
             self._state_store = FileKeyValueStore(self.kv_store_path)
         else:
             _logger.warning('No kv store path exists in profile {}'.format(
-                profile_path))
+                net_profile))
 
         # Init organizations
         orgs = self.get_net_info('organizations')
